@@ -1,3 +1,8 @@
+"""
+Dicts file for all instruction types 
+and register translations
+
+"""
 type0_instructions = {
     "MOV" : "000000"
     ,"NOT" : "000001"
