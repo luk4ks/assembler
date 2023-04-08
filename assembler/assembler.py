@@ -8,9 +8,11 @@ from dicts import registers as reg
 
 class Assembler:
 
-    """Assembler class. Main purpose is to translate instructions to machine code
+    """
+       Assembler class. Main purpose is to translate instructions to machine code
        It takes an input file and creates (or modifies if exists) 
        the file progfile.dat with the machine code
+
     """
 
     def __init__(self, file: str) -> None:
@@ -42,6 +44,8 @@ class Assembler:
             return type1[instr]
         if instr in type2:
             return type2[instr]
+        if instr in special:
+            return special[instr]
         return "?"
 
     def read_file(self) -> None:
