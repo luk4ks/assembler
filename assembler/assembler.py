@@ -109,7 +109,14 @@ class Assembler:
 
         """
 
+        lines_written = 0
         with open("progfile.dat", "w", encoding='UTF-8') as output_file:
             for i in self.code:
                 line = self.parse_instruction(i.split())
                 output_file.write(line)
+                lines_written += 1
+
+        with open("progfile.dat", "a", encoding='UTF-8') as output_file:
+            # We fill the rest of the memory with 0's. (Current memory: 64k)
+            for i in range(65536 - lines_written):
+                output_file.write("{:032b}\n".format(0))
