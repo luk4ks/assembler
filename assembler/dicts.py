@@ -1,6 +1,7 @@
 """
-Dicts file for all instruction types 
-and register translations
+Dicts file for all instruction types and register translations
+Instructions are separated by types, this is because later on
+will be easier to handle them and translate its arguments
 
 """
 type0_instructions = {

@@ -1,4 +1,8 @@
-"""Imports to treat all instructions"""
+"""
+Assembler class file. Imports to treat all instructions
+
+"""
+
 from dicts import type0_instructions as type0
 from dicts import type1_instructions as type1
 from dicts import type2_instructions as type2
@@ -9,22 +13,28 @@ from dicts import registers as reg
 class Assembler:
 
     """
-       Assembler class. Main purpose is to translate instructions to machine code
-       It takes an input file and creates (or modifies if exists) 
-       the file progfile.dat with the machine code
+    Assembler class. Main purpose is to translate instructions
+    to machine code It takes an input file and creates
+    (or modifies if exists) the file progfile.dat with the machine code
 
     """
 
     def __init__(self, file: str) -> None:
 
-        """Save file and create instructions list"""
+        """
+        Save file and create instructions list
+
+        """
 
         self.filename = file
         self.code = []
 
     def decode_register(self, register: str) -> str:
 
-        """Returns the register binary translation"""
+        """
+        Returns the register binary translation
+
+        """
 
         if register in reg:
             return reg[register]
@@ -58,55 +68,71 @@ class Assembler:
 
         with open(self.filename, "r", encoding='UTF-8') as file:
             line = file.readline()
-
             while line != "":
                 line = line.strip().replace(",", "")
                 if len(line) > 0 :
                     self.code += [line]
                 line = file.readline()
 
-    def parse_instruction(self, instruction: tuple) -> str:
+    def parse(self, instruction: tuple) -> str:
 
         """
         Parses all instructions based on their types
         and returns the translation to binary form
+        _op: opcode
+        _rd: target register
+        _r1: first operand register
+        _r2: second operand register
+        imm: immediate
+        line: string with the instruction in binary form
 
         """
 
-        _op = instruction[0]
+        # instruction[0] contains the instruction to be executed and translated
+        if instruction[0] in type0:
+            _op = self.decode_instruction(instruction[0])
+            _rd = self.decode_register(instruction[1])
+            _r1 = self.decode_register(instruction[2])
 
-        if _op in type0:
-            _rd = instruction[1]
-            _r1 = instruction[2]
-            # MOV, NOT, NEGA and NEGB instructions doesn't use three registers, we check for that
+            # MOV, NOT, NEGA and NEGB instructions doesn't use three registers
             if len(instruction) == 4:
-                _r2 = instruction[3]
-                # 6 bits opcode + 4 bits target register + 4 bits op1 + 4 bits op2 + 14 bits not used
-                line = self.decode_instruction(_op) + self.decode_register(_rd) + self.decode_register(_r1) + self.decode_register(_r2) + "{:014b}".format(0)
+                _r2 = self.decode_register(instruction[3])
+                # 6b opcode + 4b target register + 4b op1 + 4b op2 + 14b not used
+                line = _op + _rd + _r1 + _r2 + "{:014b}".format(0)
             else :
                 # Instruction is MOV, NOT, NEGA OR NEGB
-                line = self.decode_instruction(_op) + self.decode_register(_rd) + self.decode_register(_r1) + "{:018b}".format(0)
+                line = _op + _rd + _r1 + "{:018b}".format(0)
 
-        elif _op in type1:
-            register = instruction[1]
-            inm = int(instruction[2].replace("#",""))
-            # 6 bits opcode + 4 bits target regisrter + 4 bits not used?? + 18 bits immediate??
-            line = self.decode_instruction(_op) + self.decode_register(register) + "{:04b}".format(0) + "{:018b}".format(inm)
+        elif instruction[0] in type1:
+            _op = self.decode_instruction(instruction[0])
+            _rd = self.decode_register(instruction[1])
+            
+            # LI instruction just needs a target register for the immediate
+            if len(instruction) == 3:
+                imm = int(instruction[2].replace("#",""))
+                # 6b opcode + 4b target register + 4b not used + 18b immediate
+                line = _op + _rd + "{:04b}".format(0) + "{:018b}".format(imm)
+            else:
+                _r1 = self.decode_register(instruction[2])
+                imm = int(instruction[3].replace("#",""))
+                # 6b opcode + 4b target register + 4b not used + 18b immediate
+                line = _op + _rd + _r1 + "{:018b}".format(imm)
 
-        elif _op in type2:
-            _rd = instruction[1]
-            _r1 = instruction[2]
-            inm = instruction[3].replace("#","")
-            # 6 bits
-            line = self.decode_instruction(_op) + self.decode_register(_rd) + self.decode_register(_r1) + "{:018b}".format(inm)
+        elif instruction[0] in type2:
+            _op = self.decode_instruction(instruction[0])
+            imm = int(instruction[1].replace("#",""))
+            # 6b opcode + 8b not used + 18b immediate
+            line = _op + "{:08b}".format(0) + "{:018b}".format(imm)
 
-        elif _op in special:
-            line = self.decode_instruction(_op) + "{:026b}".format(0)
+        elif instruction[0] in special:
+            _op = self.decode_instruction(instruction[0])
+            # 6b opcode + 26b not used
+            line = _op + "{:026b}".format(0)
 
         line += "\n"
         return line
 
-    def parse_out(self) -> None:
+    def write(self) -> None:
 
         """
         Writes the parsed instruction to the file
@@ -116,7 +142,7 @@ class Assembler:
         lines_written = 0
         with open("progfile.dat", "w", encoding='UTF-8') as output_file:
             for i in self.code:
-                line = self.parse_instruction(i.split())
+                line = self.parse(i.split())
                 output_file.write(line)
                 lines_written += 1
 
