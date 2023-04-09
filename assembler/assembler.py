@@ -98,36 +98,36 @@ class Assembler:
             if len(instruction) == 4:
                 _r2 = self.decode_register(instruction[3])
                 # 6b opcode + 4b target register + 4b op1 + 4b op2 + 14b not used
-                line = _op + _rd + _r1 + _r2 + "{:014b}".format(0)
+                line = _op + _rd + _r1 + _r2 + f"{0:014b}"
             else :
                 # Instruction is MOV, NOT, NEGA OR NEGB
-                line = _op + _rd + _r1 + "{:018b}".format(0)
+                line = _op + _rd + _r1 + f"{0:018b}"
 
         elif instruction[0] in type1:
             _op = self.decode_instruction(instruction[0])
             _rd = self.decode_register(instruction[1])
-            
+
             # LI instruction just needs a target register for the immediate
             if len(instruction) == 3:
                 imm = int(instruction[2].replace("#",""))
                 # 6b opcode + 4b target register + 4b not used + 18b immediate
-                line = _op + _rd + "{:04b}".format(0) + "{:018b}".format(imm)
+                line = _op + _rd + f"{0:04b}" + f"{imm:018b}"
             else:
                 _r1 = self.decode_register(instruction[2])
                 imm = int(instruction[3].replace("#",""))
                 # 6b opcode + 4b target register + 4b not used + 18b immediate
-                line = _op + _rd + _r1 + "{:018b}".format(imm)
+                line = _op + _rd + _r1 + f"{imm:018b}"
 
         elif instruction[0] in type2:
             _op = self.decode_instruction(instruction[0])
             imm = int(instruction[1].replace("#",""))
             # 6b opcode + 8b not used + 18b immediate
-            line = _op + "{:08b}".format(0) + "{:018b}".format(imm)
+            line = _op + f"{0:08b}" + f"{imm:018b}"
 
         elif instruction[0] in special:
             _op = self.decode_instruction(instruction[0])
             # 6b opcode + 26b not used
-            line = _op + "{:026b}".format(0)
+            line = _op + f"{0:026b}"
 
         line += "\n"
         return line
